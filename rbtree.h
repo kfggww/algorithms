@@ -56,6 +56,9 @@ private:
     return true;
   }
 
+  // Check if rbtree is valid
+  bool IsValid(Node *root, int &black_height) const;
+
 private:
   Node *_root = nullptr;
 };

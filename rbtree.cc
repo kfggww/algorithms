@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <list>
+#include <cassert>
 
 using std::cout;
 using std::endl;
@@ -18,6 +19,10 @@ void RBTree::Put(const int &key, const int &val) {
 
   _root = Put(_root, key, val);
   _root->_color = BLACK;
+
+  int bh = 0;
+  assert(IsValid(_root, bh));
+  
 }
 
 int RBTree::Get(const int &key) const { return Get(_root, key); }
@@ -25,6 +30,9 @@ int RBTree::Get(const int &key) const { return Get(_root, key); }
 void RBTree::DeleteMin() {
   if (_root != nullptr)
     _root = DeleteMin(_root);
+
+  int bh = 0;
+  assert(IsValid(_root, bh));
 }
 
 void RBTree::LevelOrder() const {
@@ -155,6 +163,31 @@ void RBTree::FlipColor(Node *root) {
     root->_left->_color = !root->_left->_color;
   if (nullptr != root->_right)
     root->_right->_color = !root->_right->_color;
+}
+
+bool RBTree::IsValid(Node *root, int &black_height) const {
+
+  if(root == nullptr)
+    return true;
+
+  int left_bh = 0, right_bh = 0;
+  bool valid_left = IsValid(root->_left, left_bh);
+  if(!valid_left)
+    return false;
+  if(!IsRed(root->_left))
+    left_bh += 1;
+
+  bool valid_right = IsValid(root->_right, right_bh);
+  if(!valid_right)
+    return false;
+  if(!IsRed(root->_right))
+    right_bh += 1;
+
+  if(left_bh != right_bh)
+    return false;
+
+  black_height = left_bh;
+  return true;
 }
 
 int main(int argc, char **argv) {
