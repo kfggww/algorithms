@@ -9,6 +9,8 @@ public:
 
   int Get(const int &key) const;
 
+  void DeleteMin();
+
   void LevelOrder() const;
 
 private:
@@ -31,6 +33,8 @@ private:
 
   int Get(Node *root, const int &key) const;
 
+  Node *DeleteMin(Node *root);
+
   // 局部变换操作
   Node *RotateLeft(Node *root);
   Node *RotateRight(Node *root);
@@ -41,6 +45,15 @@ private:
     if (nullptr == root)
       return false;
     return root->_color == RED;
+  }
+
+  //
+  inline bool IsTwoNode(const Node *root) const {
+    // root MUST NOT be nil
+    if (root->_color == RED ||
+        root->_left != nullptr && root->_left->_color == RED)
+      return false;
+    return true;
   }
 
 private:

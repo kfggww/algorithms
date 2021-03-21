@@ -1,4 +1,5 @@
 #include "rbtree.h"
+#include <cstdlib>
 #include <iostream>
 #include <list>
 
@@ -8,7 +9,6 @@ using std::list;
 
 const bool RBTree::RED = true;
 const bool RBTree::BLACK = false;
-
 
 RBTree::Node::Node(const int &key, const int &val, const bool &color,
                    Node *left, Node *right)
@@ -21,6 +21,11 @@ void RBTree::Put(const int &key, const int &val) {
 }
 
 int RBTree::Get(const int &key) const { return Get(_root, key); }
+
+void RBTree::DeleteMin() {
+  if (_root != nullptr)
+    _root = DeleteMin(_root);
+}
 
 void RBTree::LevelOrder() const {
 
@@ -80,6 +85,45 @@ int RBTree::Get(Node *root, const int &key) const {
     return Get(root->_right, key);
 }
 
+RBTree::Node *RBTree::DeleteMin(Node *root) {
+  // outer
+  if (root->_left == nullptr && root->_right == nullptr) {
+    delete root;
+    return nullptr;
+  }
+
+  if (IsTwoNode(root)) {
+    FlipColor(root);
+    root->_left = DeleteMin(root->_left);
+  }
+
+  else if (!IsTwoNode(root->_left))
+    root->_left = DeleteMin(root->_left);
+
+  else if (IsTwoNode(root->_left) && IsTwoNode(root->_right)) {
+    FlipColor(root);
+    root->_left = DeleteMin(root->_left);
+  }
+
+  else {
+    root->_right = RotateRight(root->_right);
+    root = RotateLeft(root);
+    root->_right->_color = BLACK;
+    root->_left->_left->_color = RED;
+    root->_left = DeleteMin(root->_left);
+  }
+
+  // 局部变换保持平衡
+  if (IsRed(root->_right) && !IsRed(root->_left))
+    root = RotateLeft(root);
+  if (IsRed(root->_left) && IsRed(root->_left->_left))
+    root = RotateRight(root);
+  if (IsRed(root->_left) && IsRed(root->_right))
+    FlipColor(root);
+
+  return root;
+}
+
 RBTree::Node *RBTree::RotateLeft(Node *root) {
 
   bool rootColor = root->_color;
@@ -113,12 +157,22 @@ void RBTree::FlipColor(Node *root) {
     root->_right->_color = !root->_right->_color;
 }
 
-int main() {
+int main(int argc, char **argv) {
   RBTree rbtree;
 
-  for (int i = 0; i < 5; ++i) {
+  int size = 5;
+  int delete_count = 2;
+  if (argc == 3) {
+    size = atoi(argv[1]);
+    delete_count = atoi(argv[2]);
+  }
+  for (int i = 0; i < size; ++i) {
     rbtree.Put(i, i);
   }
+  rbtree.LevelOrder();
+
+  for (int i = 0; i < delete_count; ++i)
+    rbtree.DeleteMin();
 
   rbtree.LevelOrder();
 
